@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor Classifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-dark': '#1a1a1a',
+                        'primary-blue': '#1b62f8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f8f9;
+            overflow-x: hidden;
+        }
+
+        /* Custom styles for the square image container */
+        .square-container {
+            width: 200px;
+            height: 200px;
+            overflow: hidden;
+            border-radius: 1.5rem; /* Matches the rounded-3xl class */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem; /* Spacing below the image */
+        }
+        .square-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Tailwind CSS spinner animation */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin-slow {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-[#f7f8f9]">
+
+    <header class="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-primary-blue">
+                <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm.5 5.5a.75.75 0 00-1.5 0v4.75h-1.5a.75.75 0 000 1.5h1.5v.75a.75.75 0 001.5 0v-.75h1.5a.75.75 0 000-1.5h-1.5V7.75z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-2xl font-bold">Convolutional Neural Network</span>
+        </div>
+        <nav class="hidden md:flex space-x-6 text-gray-600 font-medium">
+            <a href="#" class="hover:text-primary-dark">Home</a>
+            <a href="#" class="hover:text-primary-dark">About CNN</a>
+            <a href="#" class="hover:text-primary-dark">Contact</a>
+        </nav>
+        <div class="flex items-center space-x-4">
+            <a href="#" class="hidden md:block text-gray-600 font-medium hover:text-primary-dark">Log in</a>
+            <a href="#" class="bg-primary-dark text-white px-5 py-2.5 rounded-full font-semibold hover:bg-gray-800 transition-colors hidden md:block">Sign up</a>
+            <button class="md:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="relative z-20 container mx-auto p-4 md:p-12 lg:p-16 max-w-7xl">
+        <div class="relative flex flex-col lg:flex-row items-center justify-between gap-12">
+
+            <div class="flex flex-col lg:flex-row items-center lg:items-start lg:w-1/2">
+                <div class="text-center lg:text-left">
+                    <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
+                        Brain Tumor<br>Classification
+                    </h1>
+                    <p class="text-lg md:text-xl font-medium text-gray-600">
+                        Classify brain tumors from X-ray images<br>using a Convolutional Neural Network.
+                    </p>
+                </div>
+            </div>
+            <div class="w-full lg:w-1/2 flex justify-center">
+                <div class="bg-white p-6 md:p-12 rounded-3xl shadow-lg text-center max-w-lg w-full relative">
+                    <div class="absolute top-0 right-0 p-4 transform translate-x-1/2 -translate-y-1/2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-primary-blue opacity-50">
+                            <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm.5 5.5a.75.75 0 00-1.5 0v4.75h-1.5a.75.75 0 000 1.5h1.5v.75a.75.75 0 001.5 0v-.75h1.5a.75.75 0 000-1.5h-1.5V7.75z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+
+                    <div id="image-preview" class="square-container bg-gray-200 shadow-xl mx-auto hidden">
+                        <img id="uploaded-image" src="" alt="Uploaded X-ray image">
+                    </div>
+
+                    <div id="loading-spinner" class="hidden flex flex-col items-center justify-center p-6 md:p-12">
+                        <svg class="animate-spin-slow h-10 w-10 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-4 text-gray-600 font-semibold text-lg">Analyzing the image...</p>
+                    </div>
+
+                    <form action="/" method="post" enctype="multipart/form-data" id="upload-form">
+                        <label for="file-upload" class="bg-primary-blue text-white px-8 py-4 rounded-full font-semibold text-lg cursor-pointer hover:bg-blue-600 transition-colors inline-block mb-4 shadow-lg">
+                            Upload X-ray Image
+                        </label>
+                        <input id="file-upload" type="file" name="file" class="hidden" accept="image/*">
+                    </form>
+                    <p class="text-gray-500 mb-6">or drop a file</p>
+                    
+                    <div id="result-container" class="mt-8 p-6 md:p-8 bg-white rounded-3xl shadow-lg w-full mx-auto transform transition-all duration-300 ease-in-out hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl md:text-2xl font-bold text-gray-900">
+                                Classification Results 🧠
+                            </h3>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl">
+                                <span class="text-gray-600 font-medium">Predicted Class:</span>
+                                <span id="predicted-class" class="text-lg font-semibold text-primary-dark"></span>
+                            </div>
+                            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl">
+                                <span class="text-gray-600 font-medium">Confidence:</span>
+                                <span id="accuracy-score" class="text-lg font-semibold text-primary-dark"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-4 text-center text-gray-500 text-sm">
+        <p>A deep learning project utilizing CNNs for brain tumor classification.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('file-upload');
+            const uploadedImage = document.getElementById('uploaded-image');
+            const imagePreviewContainer = document.getElementById('image-preview');
+            const resultContainer = document.getElementById('result-container');
+            const predictedClassSpan = document.getElementById('predicted-class');
+            const accuracyScoreSpan = document.getElementById('accuracy-score');
+            const uploadButton = document.getElementById('upload-form').querySelector('label');
+            const dropText = document.querySelector('p.text-gray-500');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            // Function to display the results
+            function updateResults(data) {
+                if (data && data.prediction_class && data.accuracy) {
+                    predictedClassSpan.textContent = data.prediction_class;
+                    accuracyScoreSpan.textContent = `${(parseFloat(data.accuracy)).toFixed(2)}%`;
+                    resultContainer.classList.remove('hidden');
+                }
+            }
+
+            // Function to handle the file upload process
+            function handleFileUpload(file) {
+                // Hide existing elements and show the loading spinner
+                uploadButton.classList.add('hidden');
+                dropText.classList.add('hidden');
+                resultContainer.classList.add('hidden');
+                imagePreviewContainer.classList.add('hidden');
+                loadingSpinner.classList.remove('hidden');
+
+                const imageURL = URL.createObjectURL(file);
+                uploadedImage.src = imageURL;
+
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Use a timeout to simulate the 3-second analysis delay
+                setTimeout(() => {
+                    fetch('/', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide the loading spinner and show the results
+                        loadingSpinner.classList.add('hidden');
+                        imagePreviewContainer.classList.remove('hidden');
+                        updateResults(data);
+
+                        // Reset UI elements for a new upload
+                        uploadButton.classList.remove('hidden');
+                        dropText.classList.remove('hidden');
+
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        loadingSpinner.classList.add('hidden');
+                        uploadButton.classList.remove('hidden');
+                        dropText.classList.remove('hidden');
+                    });
+                }, 3000); // 3000 milliseconds = 3 seconds
+            }
+
+            // Listen for changes on the file input
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    handleFileUpload(file);
+                }
+            });
+
+            // Handle drag and drop
+            const dropArea = document.querySelector('.bg-white');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropArea.classList.add('bg-blue-50');
+            }
+
+            function unhighlight() {
+                dropArea.classList.remove('bg-blue-50');
+            }
+
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
